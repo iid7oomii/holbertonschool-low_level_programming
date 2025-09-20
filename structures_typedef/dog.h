@@ -3,9 +3,9 @@
 
 /**
  * struct dog - a dog's basic information
- * @name:	name of the dog
- * @age:	age of the dog
- * @owner:	owner of the dog
+ * @name:name of the dog
+ * @age:age of the dog
+ * @owner:owner of the dog
  * Description: Defines a new type struct dog with name, age and owner
  */
 struct dog
@@ -15,5 +15,7 @@ struct dog
 	char *owner;
 };
 
-#endif /* DOG_H */
+/* function prototype */
+void init_dog(struct dog *d, char *name, float age, char *owner);
 
+#endif /* DOG_H */
