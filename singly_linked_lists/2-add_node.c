@@ -2,6 +2,20 @@
 #include <string.h>
 #include <stdlib.h>
 
+/**
+ * _strlen - calculates length of a string
+ * @s: input string
+ * Return: length of string
+ */
+unsigned int _strlen(const char *s)
+{
+	unsigned int i = 0;
+
+	while (s[i])
+	i++;
+	return (i);
+}
+
 
 /**
  * add_node - adds a new node at the beginning of a list_t list
