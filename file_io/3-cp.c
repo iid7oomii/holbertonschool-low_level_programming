@@ -39,7 +39,16 @@ void copy_content(int fd_from, int fd_to, char *argv[])
 	int bytes_read, bytes_written;
 	char buffer[1024];
 
-	while ((bytes_read = read(fd_from, buffer, 1024)) > 0)
+	bytes_read = read(fd_from, buffer, 1024);
+	if (bytes_read == -1)
+	{
+		dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", argv[1]);
+		close(fd_from);
+		close(fd_to);
+		exit(98);
+	}
+
+	while (bytes_read > 0)
 	{
 		bytes_written = write(fd_to, buffer, bytes_read);
 		if (bytes_written == -1 || bytes_written != bytes_read)
@@ -49,14 +58,14 @@ void copy_content(int fd_from, int fd_to, char *argv[])
 			close(fd_to);
 			exit(99);
 		}
-	}
-
-	if (bytes_read == -1)
-	{
-		dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", argv[1]);
-		close(fd_from);
-		close(fd_to);
-		exit(98);
+		bytes_read = read(fd_from, buffer, 1024);
+		if (bytes_read == -1)
+		{
+			dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", argv[1]);
+			close(fd_from);
+			close(fd_to);
+			exit(98);
+		}
 	}
 }
 
@@ -70,7 +79,6 @@ void close_files(int fd_from, int fd_to)
 	if (close(fd_from) == -1)
 	{
 		dprintf(STDERR_FILENO, "Error: Can't close fd %d\n", fd_from);
-		close(fd_to);
 		exit(100);
 	}
 
