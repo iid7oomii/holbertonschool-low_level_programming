@@ -2,7 +2,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdlib.h>
-#include <stdio.h>
 
 /**
  * open_files - Opens source and destination files
@@ -12,6 +11,12 @@
  */
 void open_files(char *argv[], int *fd_from, int *fd_to)
 {
+	if (argc != 3)
+	{
+		dprintf(STDERR_FILENO, "Usage: cp file_from file_to\n");
+		exit(97);
+	}
+
 	*fd_from = open(argv[1], O_RDONLY);
 	if (*fd_from == -1)
 	{
@@ -29,48 +34,40 @@ void open_files(char *argv[], int *fd_from, int *fd_to)
 }
 
 /**
- * copy_content - Copies content from source to destination
+ * copy_files - Copies content from source to destination
  * @fd_from: Source file descriptor
  * @fd_to: Destination file descriptor
- * @argv: Array of arguments
+ * @file_from: Source filename
+ * @file_to: Destination filename
  */
-void copy_content(int fd_from, int fd_to, char *argv[])
+void copy_files(int fd_from, int fd_to, char *file_from, char *file_to)
 {
 	int bytes_read, bytes_written;
 	char buffer[1024];
 
-	bytes_read = read(fd_from, buffer, 1024);
-	if (bytes_read == -1)
-	{
-		dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", argv[1]);
-		close(fd_from);
-		close(fd_to);
-		exit(98);
-	}
-
-	while (bytes_read > 0)
+	while ((bytes_read = read(fd_from, buffer, 1024)) > 0)
 	{
 		bytes_written = write(fd_to, buffer, bytes_read);
-		if (bytes_written == -1 || bytes_written != bytes_read)
+		if (bytes_written != bytes_read)
 		{
-			dprintf(STDERR_FILENO, "Error: Can't write to %s\n", argv[2]);
+			dprintf(STDERR_FILENO, "Error: Can't write to %s\n", file_to);
 			close(fd_from);
 			close(fd_to);
 			exit(99);
 		}
-		bytes_read = read(fd_from, buffer, 1024);
-		if (bytes_read == -1)
-		{
-			dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", argv[1]);
-			close(fd_from);
-			close(fd_to);
-			exit(98);
-		}
+	}
+
+	if (bytes_read == -1)
+	{
+		dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", file_from);
+		close(fd_from);
+		close(fd_to);
+		exit(98);
 	}
 }
 
 /**
- * close_files - Closes file descriptors with error checking
+ * close_files - Closes file descriptors
  * @fd_from: Source file descriptor
  * @fd_to: Destination file descriptor
  */
@@ -94,7 +91,7 @@ void close_files(int fd_from, int fd_to)
  * @argc: Number of arguments
  * @argv: Array of arguments
  *
- * Return: 0 on success, or exit with error code
+ * Return: 0 on success
  */
 int main(int argc, char *argv[])
 {
@@ -107,8 +104,7 @@ int main(int argc, char *argv[])
 	}
 
 	open_files(argv, &fd_from, &fd_to);
-	copy_content(fd_from, fd_to, argv);
+	copy_files(fd_from, fd_to, argv[1], argv[2]);
 	close_files(fd_from, fd_to);
-
 	return (0);
 }
