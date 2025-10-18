@@ -4,33 +4,56 @@
 #include <stdlib.h>
 
 /**
- * open_files - Opens source and destination files
- * @argv: Array of arguments
- * @fd_from: Pointer to source file descriptor
- * @fd_to: Pointer to destination file descriptor
+ * check_args - Checks if arguments are correct
+ * @argc: Number of arguments
  */
-void open_files(char *argv[], int *fd_from, int *fd_to)
+void check_args(int argc)
 {
 	if (argc != 3)
 	{
 		dprintf(STDERR_FILENO, "Usage: cp file_from file_to\n");
 		exit(97);
 	}
+}
 
-	*fd_from = open(argv[1], O_RDONLY);
-	if (*fd_from == -1)
+/**
+ * open_source - Opens source file
+ * @filename: Source filename
+ *
+ * Return: File descriptor
+ */
+int open_source(char *filename)
+{
+	int fd;
+
+	fd = open(filename, O_RDONLY);
+	if (fd == -1)
 	{
-		dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", argv[1]);
+		dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", filename);
 		exit(98);
 	}
+	return (fd);
+}
 
-	*fd_to = open(argv[2], O_CREAT | O_WRONLY | O_TRUNC, 0664);
-	if (*fd_to == -1)
+/**
+ * open_dest - Opens destination file
+ * @filename: Destination filename
+ * @fd_from: Source file descriptor
+ *
+ * Return: File descriptor
+ */
+int open_dest(char *filename, int fd_from)
+{
+	int fd;
+
+	fd = open(filename, O_CREAT | O_WRONLY | O_TRUNC, 0664);
+	if (fd == -1)
 	{
-		dprintf(STDERR_FILENO, "Error: Can't write to %s\n", argv[2]);
-		close(*fd_from);
+		dprintf(STDERR_FILENO, "Error: Can't write to %s\n", filename);
+		close(fd_from);
 		exit(99);
 	}
+	return (fd);
 }
 
 /**
@@ -97,13 +120,9 @@ int main(int argc, char *argv[])
 {
 	int fd_from, fd_to;
 
-	if (argc != 3)
-	{
-		dprintf(STDERR_FILENO, "Usage: cp file_from file_to\n");
-		exit(97);
-	}
-
-	open_files(argv, &fd_from, &fd_to);
+	check_args(argc);
+	fd_from = open_source(argv[1]);
+	fd_to = open_dest(argv[2], fd_from);
 	copy_files(fd_from, fd_to, argv[1], argv[2]);
 	close_files(fd_from, fd_to);
 	return (0);
